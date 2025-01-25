@@ -1,5 +1,5 @@
 % RectangleIceSolve
-clear; close all
+% clear; close all
 %% Read in plate parameters from plateeig.f
 FilePath = "C:\Users\MaxPierce\Documents\Code\3dw\results\clean\corr_taper\reftran\FromSupercloud\rectangleice\io\";
 Input = readtable(FilePath + "default.inp",'FileType','text');
@@ -12,19 +12,19 @@ modebymode = 0;
 
 % Use nondimensionalization in SquareIce sheet of YablonovitchSheet Excel
 K = 1;
-a = 9.8929;
+a = 18.190673904035528;
 b = a/aob;
 theta0 = pi/2;
-delta = 0.036579959;
-D = 0.745604561;
+delta = 0.052432165;
+% D = 0.745604561;
 % h = 0.203221994;
-% Gamma = 0.5;
-AbsErr = 1e-3;
+Gamma = 0.5;
+AbsErr = 1e-2;
 endrho = 50;
 
 % Calculating k_ice and D for a given Gamma
-% D_find = @(D) D*kice_find(K,D,delta).^4 - Gamma;
-% D = fzero(D_find,1);
+D_find = @(D) D*kice_find(K,D,delta).^4 - Gamma;
+D = fzero(D_find,1);
 kice = kice_find(K,D,delta);
 Gamma = D*kice^4;
 
@@ -110,19 +110,19 @@ end
 
 %% Forming Q_ij
 
-Q_SS  = zeros(pTrunc,pTrunc);
-Q_SA  = zeros(pTrunc,pTrunc);
-Q_AS  = zeros(pTrunc,pTrunc);
-Q_AA  = zeros(pTrunc,pTrunc);
+% Q_SS  = zeros(pTrunc,pTrunc);
+% Q_SA  = zeros(pTrunc,pTrunc);
+% Q_AS  = zeros(pTrunc,pTrunc);
+% Q_AA  = zeros(pTrunc,pTrunc);
 
 % only looping through upper diagonal since Q_ij is known to be symmetric
-for ii = 1:pTrunc
-    for jj = ii:pTrunc
+for ii = 36 %1:pTrunc
+    for jj = 36 %ii:pTrunc
         % SS
         QPV_SSintegrand1 = @(chigrid1,rhogrid1) rhogrid1.^2./(rhogrid1 - 1).*CapWScript(nTrunc, k, alphaSS, a, b, K*rhogrid1.*cos(chigrid1), K*rhogrid1.*sin(chigrid1), ii, 0, 0).*CapWScript(nTrunc, k, alphaSS, a, b, -K*rhogrid1.*cos(chigrid1), -K*rhogrid1.*sin(chigrid1), jj, 0, 0) + ...
             (2 - rhogrid1).^2./((2 - rhogrid1) - 1).*CapWScript(nTrunc, k, alphaSS, a, b, K*(2 - rhogrid1).*cos(chigrid1), K*(2 - rhogrid1).*sin(chigrid1), ii, 0, 0).*CapWScript(nTrunc, k, alphaSS, a, b, -K*(2 - rhogrid1).*cos(chigrid1), -K*(2 - rhogrid1).*sin(chigrid1), jj, 0, 0);
         QPV_SSintegrand2 = @(chigrid2, rhogrid2) rhogrid2.^2./(rhogrid2 - 1).*CapWScript(nTrunc, k, alphaSS, a, b, K*rhogrid2.*cos(chigrid2), K*rhogrid2.*sin(chigrid2), ii, 0, 0).*CapWScript(nTrunc, k, alphaSS, a, b, -K*rhogrid2.*cos(chigrid2), -K*rhogrid2.*sin(chigrid2), jj, 0, 0);
-        QPV_SS_gauss = integral2(QPV_SSintegrand1, 0, pi/2, 0, 1,'AbsTol',AbsErr) + integral2(QPV_SSintegrand2, 0, pi/2, 2, endrho,'AbsTol',AbsErr);
+        QPV_SS_gauss = integral2(QPV_SSintegrand1, 0, pi/2, 0, 1,'Method','iterated','AbsTol',AbsErr) + integral2(QPV_SSintegrand2, 0, pi/2, 2, endrho,'Method','iterated','AbsTol',AbsErr);
 
         QOther_SSintegrand = @(chi) CapWScript(nTrunc, k, alphaSS, a, b, K*cos(chi),K*sin(chi), ii, 0, 0).*CapWScript(nTrunc, k, alphaSS, a, b, -K*cos(chi),-K*sin(chi), jj, 0, 0);
         QOther_SS_gauss = integral(QOther_SSintegrand,0,pi/2,'AbsTol',AbsErr);
@@ -133,7 +133,7 @@ for ii = 1:pTrunc
         QPV_SAintegrand1 = @(chigrid1,rhogrid1) rhogrid1.^2./(rhogrid1 - 1).*CapWScript(nTrunc, k, alphaSA, a, b, K*rhogrid1.*cos(chigrid1), K*rhogrid1.*sin(chigrid1), ii, 0, 1).*CapWScript(nTrunc, k, alphaSA, a, b, -K*rhogrid1.*cos(chigrid1), -K*rhogrid1.*sin(chigrid1), jj, 0, 1) + ...
             (2 - rhogrid1).^2./((2 - rhogrid1) - 1).*CapWScript(nTrunc, k, alphaSA, a, b, K*(2 - rhogrid1).*cos(chigrid1), K*(2 - rhogrid1).*sin(chigrid1), ii, 0, 1).*CapWScript(nTrunc, k, alphaSA, a, b, -K*(2 - rhogrid1).*cos(chigrid1), -K*(2 - rhogrid1).*sin(chigrid1), jj, 0, 1);
         QPV_SAintegrand2 = @(chigrid2,rhogrid2) rhogrid2.^2./(rhogrid2 - 1).*CapWScript(nTrunc, k, alphaSA, a, b, K*rhogrid2.*cos(chigrid2), K*rhogrid2.*sin(chigrid2), ii, 0, 1).*CapWScript(nTrunc, k, alphaSA, a, b, -K*rhogrid2.*cos(chigrid2), -K*rhogrid2.*sin(chigrid2), jj, 0, 1);
-        QPV_SA_gauss = integral2(QPV_SAintegrand1, 0, pi/2, 0, 1,'AbsTol',AbsErr) + integral2(QPV_SAintegrand2, 0, pi/2, 2, endrho,'AbsTol',AbsErr);
+        QPV_SA_gauss = integral2(QPV_SAintegrand1, 0, pi/2, 0, 1,'Method','iterated','AbsTol',AbsErr) + integral2(QPV_SAintegrand2, 0, pi/2, 2, endrho,'Method','iterated','AbsTol',AbsErr);
 
         QOther_SAintegrand = @(chi) CapWScript(nTrunc, k, alphaSA, a, b, K*cos(chi),K*sin(chi), ii, 0, 1).*CapWScript(nTrunc, k, alphaSA, a, b, -K*cos(chi),-K*sin(chi), jj, 0, 1);
         QOther_SA_gauss = integral(QOther_SAintegrand, 0, pi/2, 'AbsTol',AbsErr);
@@ -144,7 +144,7 @@ for ii = 1:pTrunc
         QPV_ASintegrand1 = @(chigrid1,rhogrid1) rhogrid1.^2./(rhogrid1 - 1).*CapWScript(nTrunc, k, alphaAS, a, b, K*rhogrid1.*cos(chigrid1), K*rhogrid1.*sin(chigrid1), ii, 1, 0).*CapWScript(nTrunc, k, alphaAS, a, b, -K*rhogrid1.*cos(chigrid1), -K*rhogrid1.*sin(chigrid1), jj, 1, 0) + ...
             (2 - rhogrid1).^2./((2 - rhogrid1) - 1).*CapWScript(nTrunc, k, alphaAS, a, b, K*(2 - rhogrid1).*cos(chigrid1), K*(2 - rhogrid1).*sin(chigrid1), ii, 1, 0).*CapWScript(nTrunc, k, alphaAS, a, b, -K*(2 - rhogrid1).*cos(chigrid1), -K*(2 - rhogrid1).*sin(chigrid1), jj, 1, 0);
         QPV_ASintegrand2 = @(chigrid2,rhogrid2) rhogrid2.^2./(rhogrid2 - 1).*CapWScript(nTrunc, k, alphaAS, a, b, K*rhogrid2.*cos(chigrid2), K*rhogrid2.*sin(chigrid2), ii, 1, 0).*CapWScript(nTrunc, k, alphaAS, a, b, -K*rhogrid2.*cos(chigrid2), -K*rhogrid2.*sin(chigrid2), jj, 1, 0);
-        QPV_AS_gauss = integral2(QPV_ASintegrand1, 0, pi/2, 0, 1, 'AbsTol', AbsErr) + integral2(QPV_ASintegrand2, 0, pi/2, 2, endrho, 'AbsTol', AbsErr);
+        QPV_AS_gauss = integral2(QPV_ASintegrand1, 0, pi/2, 0, 1,'Method','iterated', 'AbsTol', AbsErr) + integral2(QPV_ASintegrand2, 0, pi/2, 2, endrho,'Method','iterated', 'AbsTol', AbsErr);
 
         QOther_ASintegrand = @(chi) CapWScript(nTrunc, k, alphaAS, a, b, K*cos(chi),K*sin(chi), ii, 1, 0).*CapWScript(nTrunc, k, alphaAS, a, b, -K*cos(chi),-K*sin(chi), jj, 1, 0);
         QOther_AS_gauss = integral(QOther_ASintegrand, 0, pi/2, 'AbsTol', AbsErr);
@@ -155,20 +155,19 @@ for ii = 1:pTrunc
         QPV_AAintegrand1 = @(chigrid1,rhogrid1) rhogrid1.^2./(rhogrid1 - 1).*CapWScript(nTrunc, k, alphaAA, a, b, K*rhogrid1.*cos(chigrid1), K*rhogrid1.*sin(chigrid1), ii, 1, 1).*CapWScript(nTrunc, k, alphaAA, a, b, -K*rhogrid1.*cos(chigrid1), -K*rhogrid1.*sin(chigrid1), jj, 1, 1) + ...
             (2 - rhogrid1).^2./((2 - rhogrid1) - 1).*CapWScript(nTrunc, k, alphaAA, a, b, K*(2 - rhogrid1).*cos(chigrid1), K*(2 - rhogrid1).*sin(chigrid1), ii, 1, 1).*CapWScript(nTrunc, k, alphaAA, a, b, -K*(2 - rhogrid1).*cos(chigrid1), -K*(2 - rhogrid1).*sin(chigrid1), jj, 1, 1);
         QPV_AAintegrand2 = @(chigrid2,rhogrid2) rhogrid2.^2./(rhogrid2 - 1).*CapWScript(nTrunc, k, alphaAA, a, b, K*rhogrid2.*cos(chigrid2), K*rhogrid2.*sin(chigrid2), ii, 1, 1).*CapWScript(nTrunc, k, alphaAA, a, b, -K*rhogrid2.*cos(chigrid2), -K*rhogrid2.*sin(chigrid2), jj, 1, 1);
-        QPV_AA_gauss = integral2(QPV_AAintegrand1, 0, pi/2, 0, 1, 'AbsTol', AbsErr) + integral2(QPV_AAintegrand2, 0, pi/2, 2, endrho, 'AbsTol', AbsErr);
+        QPV_AA_gauss = integral2(QPV_AAintegrand1, 0, pi/2, 0, 1,'Method','iterated', 'AbsTol', AbsErr) + integral2(QPV_AAintegrand2, 0, pi/2, 2, endrho,'Method','iterated', 'AbsTol', AbsErr);
 
         QOther_AAintegrand = @(chi) CapWScript(nTrunc, k, alphaAA, a, b, K*cos(chi),K*sin(chi), ii, 1, 1).*CapWScript(nTrunc, k, alphaAA, a, b, -K*cos(chi),-K*sin(chi), jj, 1, 1);
         QOther_AA_gauss = integral(QOther_AAintegrand, 0, pi/2, 'AbsTol', AbsErr);
 
         Q_AA(ii,jj) = K^2*a*b/pi*(1/pi*QPV_AA_gauss + 1i*QOther_AA_gauss);
-
     end
 end
 % reflecting matrices over diagonal to make symmetric
-Q_SS = Q_SS + triu(Q_SS, 1).';
-Q_SA = Q_SA + triu(Q_SA, 1).';
-Q_AS = Q_AS + triu(Q_AS, 1).';
-Q_AA = Q_AA + triu(Q_AA, 1).';
+% Q_SS = Q_SS + triu(Q_SS, 1).';
+% Q_SA = Q_SA + triu(Q_SA, 1).';
+% Q_AS = Q_AS + triu(Q_AS, 1).';
+% Q_AA = Q_AA + triu(Q_AA, 1).';
 
 R_SS = zeros(pTrunc,1);
 R_SA = zeros(pTrunc,1);
@@ -298,7 +297,7 @@ plot(flip(theta-theta0),abs(DiffCoeff))
 xlim([0,pi])
 xlabel('$\theta$')
 ylabel('$|A(\theta,0)|$')
-title("$k^Ia$=" + round(kice*a,2) + ", $\Gamma=$" + round(Gamma,2) + ", $k^Oh=$" + round(K*h,2))
+% title("$k^Ia$=" + round(kice*a,2) + ", $\Gamma=$" + round(Gamma,2) + ", $k^Oh=$" + round(K*h,2))
 
 
 ScatteringCrossSection = 1/(2*pi)*trapz(theta(2:end),abs(DiffCoeff(2:end)).^2);
