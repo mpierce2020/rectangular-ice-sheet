@@ -1,0 +1,1 @@
+Matlab script for ocean wave interactions with a rectangular ice sheet based on algorithm described in R. Porter. 2019. The coupling between ocean waves and rectangular ice sheets. Journal of Fluids and Structures.
